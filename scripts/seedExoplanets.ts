@@ -36,7 +36,6 @@ async function seedDatabase() {
     const allPlanets = await fetchAllValidExoplanets();
     if (!allPlanets || allPlanets.length === 0) {
       throw new Error("No valid exoplanets found to seed.");
-      return;
     }
     console.log(`Preparing to seed ${allPlanets.length} exoplanets...`);
 
