@@ -27,8 +27,12 @@ export function generatePlanetFeatures(
     baseColor = "#8b4513";
     waterColor = "#d2691e";
   }
-  const landMassPercentage =
-    tempK > 373 ? 100 : Math.min(30 + (tempK - 260) / 2, 100);
+  const landMassPercentage = Math.max(
+    0,
+    tempK > 373
+      ? Math.max(0, 100 - (tempK - 373) * 0.5)
+      : Math.min(30 + (tempK - 260) / 2, 100)
+  );
 
   return {
     landMassPercentage,

@@ -4,6 +4,30 @@ import { db } from "@/index";
 import { count } from "drizzle-orm";
 import { getDayOfYear } from "@/utils/helper";
 
+export async function fetchExoplanetByIndex(
+  index: number
+): Promise<ExoplanetData> {
+  try {
+    console.log(`Fetching exoplanet by index: ${index}`);
+    const planetResult = await db
+      .select()
+      .from(exoplanetLibrary)
+      .orderBy(exoplanetLibrary.id)
+      .limit(1)
+      .offset(index)
+      .get();
+
+    if (!planetResult) {
+      throw new Error(`No exoplanet found for index ${index}`);
+    }
+    console.log(`Fetched exoplanet: ${planetResult.planetName}`);
+    return planetResult.planetData;
+  } catch (error) {
+    console.error("Error fetching exoplanet data:", error);
+    throw new Error("Failed to fetch exoplanet data");
+  }
+}
+
 export async function fetchRandomExoplanet(): Promise<ExoplanetData> {
   try {
     console.log("Fetching daily exoplanet...");

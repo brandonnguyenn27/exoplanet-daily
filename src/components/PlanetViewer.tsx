@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useMemo } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { PlanetFeatures } from "@/types";
 import * as THREE from "three";
@@ -228,6 +228,49 @@ function Planet({ features }: PlanetProps) {
     </group>
   );
 }
+function SceneLighting() {
+  const lightRef = useRef<THREE.DirectionalLight>(null);
+  const { camera } = useThree(); // Get the active camera
+
+  // This frame loop updates the light's position to match the camera's position
+  useFrame(() => {
+    if (lightRef.current) {
+      // Position the light source exactly where the camera is
+      lightRef.current.position.copy(camera.position);
+      // Optional: Slightly offset the light if needed, e.g.:
+      // lightRef.current.position.copy(camera.position).add(new THREE.Vector3(0, 0.5, 0));
+
+      // Ensure the light always points towards the center (the planet)
+      // DirectionalLight targets (0,0,0) by default, but we update its target object
+      // just to be explicit and ensure it updates correctly after position changes.
+      lightRef.current.target.position.set(0, 0, 0);
+      lightRef.current.target.updateMatrixWorld();
+    }
+  });
+  return (
+    <>
+      {/* Ambient light provides overall base illumination */}
+      <ambientLight intensity={0.5} /> {/* Slightly increased ambient */}
+      {/* Directional light simulates a distant star, now linked to the camera */}
+      <directionalLight
+        ref={lightRef} // Assign the ref
+        // Initial position doesn't matter much as it's updated in useFrame
+        position={[10, 10, 10]}
+        intensity={2.0} // Adjusted intensity
+        color="#fff8e7"
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-camera-far={50}
+        shadow-camera-left={-10}
+        shadow-camera-right={10}
+        shadow-camera-top={10}
+        shadow-camera-bottom={-10}
+      />
+      {/* We don't need the extra point light anymore with this setup */}
+    </>
+  );
+}
 
 /**
  * Main component setting up the Three.js canvas and controls.
@@ -235,10 +278,12 @@ function Planet({ features }: PlanetProps) {
 export default function PlanetViewer({ features }: PlanetProps) {
   return (
     <div className="w-full h-[400px] md:h-[500px] bg-gradient-to-br from-gray-900 to-black rounded-lg overflow-hidden border border-gray-700 shadow-lg">
-      <Canvas camera={{ position: [0, 0, 2.8], fov: 50 }}>
-        {/* Lighting */}
-        <ambientLight intensity={0.2} />
-        <pointLight position={[5, 5, 5]} intensity={1.8} color="#fff7e8" />
+      <Canvas
+        shadows
+        camera={{ position: [0, 0, 3.0], fov: 50 }} // Adjusted camera Z
+      >
+        {/* Use the SceneLighting component */}
+        <SceneLighting />
 
         {/* Planet Component */}
         <Planet features={features} />
@@ -246,11 +291,12 @@ export default function PlanetViewer({ features }: PlanetProps) {
         {/* Controls */}
         <OrbitControls
           enableZoom={true}
-          enablePan={false} // Optional: disable panning
-          minDistance={1.5} // Prevent zooming too close
-          maxDistance={5} // Prevent zooming too far out
-          autoRotate={false} // Optional: enable auto-rotation
+          enablePan={false}
+          minDistance={1.5}
+          maxDistance={8}
+          autoRotate={false}
           autoRotateSpeed={0.3}
+          target={[0, 0, 0]}
         />
       </Canvas>
     </div>

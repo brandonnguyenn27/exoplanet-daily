@@ -1,9 +1,12 @@
-import { fetchRandomExoplanet } from "@/data-access/nasa";
+import {
+  fetchRandomExoplanet,
+  fetchExoplanetByIndex,
+} from "@/data-access/nasa";
 import { generatePlanetFeatures } from "@/utils/planet-generator";
 import PlanetViewer from "@/components/PlanetViewer";
 
 export default async function Home() {
-  const exoplanet = await fetchRandomExoplanet();
+  const exoplanet = await fetchExoplanetByIndex(55);
   console.log(exoplanet);
   const features = generatePlanetFeatures(exoplanet);
   console.log(features);
